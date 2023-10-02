@@ -16,6 +16,7 @@ At_Err_t at_user_AT(int argc, char *argv[]);
 At_Err_t at_user_AT_List(int argc, char *argv[]);
 At_Err_t at_user_AT_Reboot(int argc, char *argv[]);
 At_Err_t at_user_AT_LED(int argc, char *argv[]);
+At_Err_t at_user_AT_FS_Info(int argc, char *argv[]);
 At_Err_t at_user_AT_WiFi_Connect(int argc, char *argv[]);
 At_Err_t at_user_AT_WiFi_Get_IP(int argc, char *argv[]);
 At_Err_t at_user_AT_Ping(int argc, char *argv[]);
@@ -25,6 +26,7 @@ struct At_State atTable[] = {
   { "AT+LS", AT_TYPE_CMD, at_user_AT_List },
   { "AT+REBOOT", AT_TYPE_CMD, at_user_AT_Reboot },
   { "AT+LED", AT_TYPE_CMD, at_user_AT_LED },
+  { "AT+FSINFO", AT_TYPE_CMD, at_user_AT_FS_Info },
   { "AT+WIFI", AT_TYPE_CMD, at_user_AT_WiFi_Connect },
   { "AT+IP", AT_TYPE_CMD, at_user_AT_WiFi_Get_IP },
   { "AT+PING", AT_TYPE_CMD, at_user_AT_Ping },
@@ -71,6 +73,13 @@ static struct LED _led = {
   .mode = OUTPUT,
   .flag = 0,
 };
+
+#include "fs_tools.h"
+At_Err_t at_user_AT_FS_Info(int argc, char *argv[])
+{
+    if (fs_tools_FS_info()) return AT_ERROR;
+    return AT_OK;
+}
 
 At_Err_t at_user_AT_LED(int argc, char *argv[])
 {

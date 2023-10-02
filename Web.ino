@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <StreamString.h>
+#include <FS.h>
 
 #include "led.h"
 #include "wifi.h"
@@ -31,6 +32,7 @@ void serialEvent(void)
 #if USE_WEB_SERVER
 
 #include <ESP8266WebServer.h>
+#include "fs_tools.h"
 
 #define WEB_SERVER_PORT         (80)
 ESP8266WebServer web_server(WEB_SERVER_PORT);
@@ -107,6 +109,35 @@ void setup() {
     }
 
     #if USE_WEB_SERVER
+
+    Serial.println("SPIFFS format start");
+    SPIFFS.format();
+    Serial.println("SPIFFS format finish");
+
+    if (0) {
+        StreamString message;
+        message.clear();
+        message.print(""\
+            "<html>"\
+                "<head>"\
+                    "<meta http-equiv='refresh' content='5'/>"\
+                    "<title>ESP8266 Demo</title>"\
+                    "<style>"\
+                        "body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }"\
+                    "</style>"\
+                "</head>"\
+                "<body>"\
+                    "<h1>Hello from ESP8266!</h1>"\
+                "</body>"\
+                "<button onclick=\"webHomePage_Refresh()\">"\
+                    "Click Me!"\
+                "</button>"\
+            "</html>");
+        fs_tools_writeFile("/Web/001/page/home/page.txt", message.c_str());
+    }
+    File f = SPIFFS.open("/Web/001/page/home/page.txt", "r");
+    Serial.printf("file size: %d\r\n", (int)f.count());
+    f.close();
 
     if (WiFi.isConnected()) {
         web_server.on("/", webHomepage);
