@@ -26,6 +26,16 @@ int fs_tools_FS_info(void)
     return 0;
 }
 
+int fs_tools_print_directory(const String& path, int depth)
+{
+    return fs_tools_print_directory(path.c_str(), depth);
+}
+
+int fs_tools_print_directory(const char* path, int depth)
+{
+    return 0;
+}
+
 int fs_tools_writeFile(const String& filePath, const String& text)
 {
     return fs_tools_writeFile(filePath.c_str(), text.c_str());
@@ -56,12 +66,7 @@ int fs_tools_writeFile(const char* filePath, const char* text)
 
 int fs_tools_readFile(const char* filePath, String& text)
 {
-    return fs_tools_readFile(String(filePath), text);
-}
-
-int fs_tools_readFile(const String& filePath, String& text)
-{
-    return fs_tools_readFile(filePath, text, 0);
+    return fs_tools_readFile(String(filePath), text, 0);
 }
 
 int fs_tools_readFile(const String& filePath, String& text, size_t length)
@@ -84,12 +89,7 @@ int fs_tools_readFile(const String& filePath, String& text, size_t length)
 
 int fs_tools_readFile(const String& filePath, char* text)
 {
-    return fs_tools_readFile(filePath.c_str(), text);
-}
-
-int fs_tools_readFile(const char* filePath, char* text)
-{
-    return fs_tools_readFile(filePath, text, 0);
+    return fs_tools_readFile(filePath.c_str(), text, 0);
 }
 
 int fs_tools_readFile(const char* filePath, char* text, size_t length)

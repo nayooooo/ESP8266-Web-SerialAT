@@ -37,40 +37,65 @@ void serialEvent(void)
 #define WEB_SERVER_PORT         (80)
 ESP8266WebServer web_server(WEB_SERVER_PORT);
 
-static void webHomePage_Refresh(void)
+#define WEB_PAGE_FOLDER_PATH                ((String)("/Web/001/page"))
+#define WEB_PAGE_NOTFOUND_FILE_NAME         ((String)("notFound.html"))
+#define WEB_PAGE_NOTFOUND_FILE_PATH         (WEB_PAGE_FOLDER_PATH + "/" + WEB_PAGE_NOTFOUND_FILE_NAME)
+#define WEB_PAGE_HOMEPAGE_FILE_NAME         ((String)("homePage.html"))
+#define WEB_PAGE_HOMEPAGE_FILE_PATH         (WEB_PAGE_FOLDER_PATH + "/" + WEB_PAGE_HOMEPAGE_FILE_NAME)
+
+void webFSReset(void)
 {
-    struct { int hr; int min; int sec; } time;
-    time.sec = millis() / 1000;
-    time.min = time.sec / 60 % 60;
-    time.hr = time.sec / (60 * 60);
-    time.sec %= 60;
+    StreamString message;
 
-    String message;
-    fs_tools_readFile("/Web/001/page/homePage.txt", message);
+    if (!SPIFFS.begin()) return;
+    SPIFFS.format();
+    SPIFFS.end();
 
-    web_server.send(200, "text/html", message.c_str());
-}
+    // not found
+    message.clear();
+    message.print(""\
+        "<html>"\
+            "<body>"\
+                "<h1>Not Found</h1>"\
+            "</body>"\
+        "</html>");
+    fs_tools_writeFile(WEB_PAGE_NOTFOUND_FILE_PATH, message.c_str());
 
-void webHomepage(void)
-{
-    webHomePage_Refresh();
-    Serial.println("用户访问了主页。");
+    // homePage
+    message.clear();
+    message.print(""\
+        "<html>"\
+            "<head>"\
+                "<meta http-equiv='refresh' content='5'/>"\
+                "<title>ESP8266 Demo</title>"\
+                "<style>"\
+                    "body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }"\
+                "</style>"\
+            "</head>"\
+            "<body>"\
+                "<h1>Hello from ESP8266!</h1>"\
+            "</body>"\
+            "<button onclick=\"webHomePage_Refresh()\">"\
+                "Click Me!"\
+            "</button>"\
+        "</html>");
+    fs_tools_writeFile(WEB_PAGE_HOMEPAGE_FILE_PATH, message.c_str());
 }
 
 void webNotFound(void)
 {
-    String message = "Not Found\n\n";
-    message += "URI: " + WiFi.localIP().toString() + web_server.uri() + "\n";
-    message += "Method: ";
-    message += (web_server.method() == HTTP_GET) ? "GET" : "POST";
-    message += "\n";
-    message += "Arguments: ";
-    message += web_server.args();
-    message += "\n";
-    for (uint8_t i = 0; i < web_server.args(); i++) {
-        message += "\t" + web_server.argName(i) + ": " + web_server.arg(i) + "\n";
-    }
-    web_server.send(404, "text/plain", message);
+    String message;
+    fs_tools_readFile(WEB_PAGE_NOTFOUND_FILE_PATH, message);
+    web_server.send(404, "text/html", message);
+}
+
+void webHomepage(void)
+{
+    String message;
+    fs_tools_readFile(WEB_PAGE_HOMEPAGE_FILE_PATH, message);
+    web_server.send(200, "text/html", message.c_str());
+    
+    Serial.println("用户访问了主页。");
 }
 
 #endif  // USE_WEB_SERVER
@@ -94,34 +119,16 @@ void setup() {
     #if USE_WEB_SERVER
 
     if (0) {
-        StreamString message;
-        message.clear();
-        message.print(""\
-            "<html>"\
-                "<head>"\
-                    "<meta http-equiv='refresh' content='5'/>"\
-                    "<title>ESP8266 Demo</title>"\
-                    "<style>"\
-                        "body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }"\
-                    "</style>"\
-                "</head>"\
-                "<body>"\
-                    "<h1>Hello from ESP8266!</h1>"\
-                "</body>"\
-                "<button onclick=\"webHomePage_Refresh()\">"\
-                    "Click Me!"\
-                "</button>"\
-            "</html>");
-        fs_tools_writeFile("/Web/001/page/homePage.txt", message.c_str());
+        webFSReset();
     }
-    String text;
-    fs_tools_readFile("/Web/001/page/homePage.txt", text);
-    Serial.println("text: ");
-    Serial.println(text);
+
+    SPIFFS.begin();
+    DirImplPtr fdir = SPIFFS.openDir(WEB_PAGE_FOLDER_PATH);
+    SPIFFS.end();
 
     if (WiFi.isConnected()) {
-        web_server.on("/", webHomepage);
         web_server.onNotFound(webNotFound);
+        web_server.on("/", webHomepage);
         web_server.begin();
         Serial.println("HTTP server started!");
     } else {
