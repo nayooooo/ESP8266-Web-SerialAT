@@ -35,15 +35,29 @@ int fs_tools_print_directory(const char* path)
 {
     if (!fs_tools_FS_is_begin()) return -1;
 
-    if (path == nullptr) return -2;
-
-    // Dir dir = SPIFFS.openDir(path);
-    // if (!dir.isDirectory()) return -3;
-    // Serial.println();
-    // Serial.println(dir.name());
-    // while (dir.next()) {
-    //     Serial.println(String("--") + dir.fileName());
-    // }
+    Dir dir = SPIFFS.openDir(path);
+    Serial.println();
+    if (path == "") {
+        Serial.println("all file: ");
+    } else {
+        Serial.println(String(path) + ": ");
+    }
+    uint32_t fileNum = 0;
+    size_t total_f_size = 0;
+    while (dir.next()) {
+        File f = dir.openFile("r");
+        size_t f_size = f.size();
+        total_f_size += f_size;
+        Serial.println(String("--") + dir.fileName() + "\t\t" + String((float)f_size / 1024) + "KB");
+        f.close();
+        fileNum++;
+    }
+    if (fileNum == 0) {
+        Serial.println("There are no files here!");
+    } else {
+        Serial.println(String("Total files number: ") + String(fileNum));
+        Serial.println(String("Total files size: ") + String((float)total_f_size / 1024) + "KB");
+    }
 
     SPIFFS.end();
 

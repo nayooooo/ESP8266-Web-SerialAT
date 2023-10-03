@@ -124,14 +124,20 @@ static At_Err_t _at_user_AT_FS_info(int argc, char* argv[])
 
 static At_Err_t _at_user_AT_FS_print_directory(int argc, char* argv[])
 {
-    if (argv[0] == nullptr) return AT_ERROR;
-    if (fs_tools_print_directory(argv[0])) return AT_ERROR;
+    // 没有参数，则是打印FS中的所有文件
+    // 有参数，则是打印FS中，该参数目录下的文件
+    if (argc > 1) return AT_ERROR;
+    if (argc == 0) {
+        if (fs_tools_print_directory("")) return AT_ERROR;
+    } else if (argc == 1) {
+        if (fs_tools_print_directory(argv[0])) return AT_ERROR;
+    } else return AT_ERROR;
     return AT_OK;
 }
 
 static At_FS_State atFSTable[] = {
     { "info", AT_TYPE_CMD, _at_user_AT_FS_info },
-    { "prdir", AT_TYPE_CMD, _at_user_AT_FS_print_directory },
+    { "print", AT_TYPE_CMD, _at_user_AT_FS_print_directory },
     { AT_LABLE_TAIL, AT_TYPE_NULL, at_user_AT_NULL },
 };
 At_Err_t at_user_AT_FS(int argc, char *argv[])
