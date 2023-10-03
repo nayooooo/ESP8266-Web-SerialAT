@@ -5,6 +5,7 @@
 
 #include "led.h"
 #include "wifi.h"
+#include "fs_tools.h"
 
 #define USE_SERIAL_AT     (1)
 #define USE_WEB_SERVER    (1)
@@ -32,7 +33,6 @@ void serialEvent(void)
 #if USE_WEB_SERVER
 
 #include <ESP8266WebServer.h>
-#include "fs_tools.h"
 
 #define WEB_SERVER_PORT         (80)
 ESP8266WebServer web_server(WEB_SERVER_PORT);
@@ -45,25 +45,8 @@ static void webHomePage_Refresh(void)
     time.hr = time.sec / (60 * 60);
     time.sec %= 60;
 
-    StreamString message;
-    message.clear();
-    message.printf(""\
-        "<html>"\
-            "<head>"\
-                "<meta http-equiv='refresh' content='5'/>"\
-                "<title>ESP8266 Demo</title>"\
-                "<style>"\
-                    "body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }"\
-                "</style>"\
-            "</head>"\
-            "<body>"\
-                "<h1>Hello from ESP8266!</h1>"\
-                "<font size=\"5\">Uptime: %02d:%02d:%02d</font><br><br>"\
-            "</body>"\
-            "<button onclick=\"webHomePage_Refresh()\">"\
-                "Click Me!"\
-            "</button>"\
-        "</html>", time.hr, time.min, time.sec);
+    String message;
+    fs_tools_readFile("/Web/001/page/homePage.txt", message);
 
     web_server.send(200, "text/html", message.c_str());
 }
@@ -110,10 +93,6 @@ void setup() {
 
     #if USE_WEB_SERVER
 
-    Serial.println("SPIFFS format start");
-    SPIFFS.format();
-    Serial.println("SPIFFS format finish");
-
     if (0) {
         StreamString message;
         message.clear();
@@ -133,11 +112,12 @@ void setup() {
                     "Click Me!"\
                 "</button>"\
             "</html>");
-        fs_tools_writeFile("/Web/001/page/home/page.txt", message.c_str());
+        fs_tools_writeFile("/Web/001/page/homePage.txt", message.c_str());
     }
-    File f = SPIFFS.open("/Web/001/page/home/page.txt", "r");
-    Serial.printf("file size: %d\r\n", (int)f.count());
-    f.close();
+    String text;
+    fs_tools_readFile("/Web/001/page/homePage.txt", text);
+    Serial.println("text: ");
+    Serial.println(text);
 
     if (WiFi.isConnected()) {
         web_server.on("/", webHomepage);

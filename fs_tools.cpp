@@ -26,53 +26,86 @@ int fs_tools_FS_info(void)
     return 0;
 }
 
-int fs_tools_writeFile(const String& fileRoute, const String& text)
+int fs_tools_writeFile(const String& filePath, const String& text)
 {
-    return fs_tools_writeFile(fileRoute.c_str(), text.c_str());
+    return fs_tools_writeFile(filePath.c_str(), text.c_str());
 }
 
-int fs_tools_writeFile(const char* fileRoute, const String& text)
+int fs_tools_writeFile(const char* filePath, const String& text)
 {
-    return fs_tools_writeFile(fileRoute, text.c_str());
+    return fs_tools_writeFile(filePath, text.c_str());
 }
 
-int fs_tools_writeFile(const String& fileRoute, const char* text)
+int fs_tools_writeFile(const String& filePath, const char* text)
 {
-    return fs_tools_writeFile(fileRoute.c_str(), text);
+    return fs_tools_writeFile(filePath.c_str(), text);
 }
 
-int fs_tools_writeFile(const char* fileRoute, const char* text)
+int fs_tools_writeFile(const char* filePath, const char* text)
 {
     if (!fs_tools_FS_is_begin()) return -1;
 
-    File f = SPIFFS.open(fileRoute, "w");
+    File f = SPIFFS.open(filePath, "w");
     f.print(text);
     f.close();
+
+    SPIFFS.end();
 
     return 0;
 }
 
-int fs_tools_readFile(const String& fileRoute, char* text)
+int fs_tools_readFile(const char* filePath, String& text)
 {
-    return fs_tools_readFile(fileRoute.c_str(), text);
+    return fs_tools_readFile(String(filePath), text);
 }
 
-int fs_tools_readFile(const char* fileRoute, char* text)
+int fs_tools_readFile(const String& filePath, String& text)
 {
-    return fs_tools_readFile(fileRoute, text, 0);
+    return fs_tools_readFile(filePath, text, 0);
 }
 
-int fs_tools_readFile(const char* fileRoute, char* text, size_t length)
+int fs_tools_readFile(const String& filePath, String& text, size_t length)
 {
     if (!fs_tools_FS_is_begin()) return -1;
 
-    if (!SPIFFS.exists(fileRoute)) return -2;
+    if (!SPIFFS.exists(filePath)) return -2;
 
-    File f = SPIFFS.open(fileRoute, "r");
+    File f = SPIFFS.open(filePath, "r");
     if (length == 0) {
         length = f.size();
     }
+    text = f.readString();
     f.close();
+
+    SPIFFS.end();
+
+    return 0;
+}
+
+int fs_tools_readFile(const String& filePath, char* text)
+{
+    return fs_tools_readFile(filePath.c_str(), text);
+}
+
+int fs_tools_readFile(const char* filePath, char* text)
+{
+    return fs_tools_readFile(filePath, text, 0);
+}
+
+int fs_tools_readFile(const char* filePath, char* text, size_t length)
+{
+    if (!fs_tools_FS_is_begin()) return -1;
+
+    if (!SPIFFS.exists(filePath)) return -2;
+
+    File f = SPIFFS.open(filePath, "r");
+    if (length == 0) {
+        length = f.size();
+    }
+    f.readBytes(text, length);
+    f.close();
+
+    SPIFFS.end();
 
     return 0;
 }
