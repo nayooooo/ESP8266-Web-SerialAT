@@ -16,21 +16,21 @@ At_Err_t at_user_AT(int argc, char *argv[]);
 At_Err_t at_user_AT_List(int argc, char *argv[]);
 At_Err_t at_user_AT_Reboot(int argc, char *argv[]);
 At_Err_t at_user_AT_LED(int argc, char *argv[]);
-At_Err_t at_user_AT_FS_Info(int argc, char *argv[]);
+At_Err_t at_user_AT_FS(int argc, char *argv[]);
 At_Err_t at_user_AT_WiFi_Connect(int argc, char *argv[]);
 At_Err_t at_user_AT_WiFi_Get_IP(int argc, char *argv[]);
 At_Err_t at_user_AT_Ping(int argc, char *argv[]);
 
 struct At_State atTable[] = {
-  { "AT", AT_TYPE_CMD, at_user_AT },
-  { "AT+LS", AT_TYPE_CMD, at_user_AT_List },
-  { "AT+REBOOT", AT_TYPE_CMD, at_user_AT_Reboot },
-  { "AT+LED", AT_TYPE_CMD, at_user_AT_LED },
-  { "AT+FSINFO", AT_TYPE_CMD, at_user_AT_FS_Info },
-  { "AT+WIFI", AT_TYPE_CMD, at_user_AT_WiFi_Connect },
-  { "AT+IP", AT_TYPE_CMD, at_user_AT_WiFi_Get_IP },
-  { "AT+PING", AT_TYPE_CMD, at_user_AT_Ping },
-  { AT_LABLE_TAIL, AT_TYPE_NULL, at_user_AT_NULL },
+    { "AT", AT_TYPE_CMD, at_user_AT },
+    { "AT+LS", AT_TYPE_CMD, at_user_AT_List },
+    { "AT+REBOOT", AT_TYPE_CMD, at_user_AT_Reboot },
+    { "AT+LED", AT_TYPE_CMD, at_user_AT_LED },
+    { "AT+FS", AT_TYPE_CMD, at_user_AT_FS },
+    { "AT+WIFI", AT_TYPE_CMD, at_user_AT_WiFi_Connect },
+    { "AT+IP", AT_TYPE_CMD, at_user_AT_WiFi_Get_IP },
+    { "AT+PING", AT_TYPE_CMD, at_user_AT_Ping },
+    { AT_LABLE_TAIL, AT_TYPE_NULL, at_user_AT_NULL },
 };
 
 At_Class at_user(atTable);
@@ -74,13 +74,6 @@ static struct LED _led = {
   .flag = 0,
 };
 
-#include "fs_tools.h"
-At_Err_t at_user_AT_FS_Info(int argc, char *argv[])
-{
-    if (fs_tools_FS_info()) return AT_ERROR;
-    return AT_OK;
-}
-
 At_Err_t at_user_AT_LED(int argc, char *argv[])
 {
   String infor = "";
@@ -118,6 +111,54 @@ At_Err_t at_user_AT_LED(int argc, char *argv[])
   at_user.At_Send_Infor(infor);
 
   return AT_OK;
+}
+
+#include "fs_tools.h"
+typedef struct At_State At_FS_State;
+
+static At_Err_t _at_user_AT_FS_info(int argc, char* argv[])
+{
+    if (fs_tools_FS_info()) return AT_ERROR;
+    return AT_OK;
+}
+
+static At_Err_t _at_user_AT_FS_print_directory(int argc, char* argv[])
+{
+    if (argv[0] == nullptr) return AT_ERROR;
+    if (fs_tools_print_directory(argv[0])) return AT_ERROR;
+    return AT_OK;
+}
+
+static At_FS_State atFSTable[] = {
+    { "info", AT_TYPE_CMD, _at_user_AT_FS_info },
+    { "prdir", AT_TYPE_CMD, _at_user_AT_FS_print_directory },
+    { AT_LABLE_TAIL, AT_TYPE_NULL, at_user_AT_NULL },
+};
+At_Err_t at_user_AT_FS(int argc, char *argv[])
+{
+    if (argc == 0) {
+        Serial.println();
+        Serial.println("please typing like the below: ");
+        Serial.println("AT+FS");
+        uint32_t i = 0;
+        while (atFSTable[i].atLable != AT_LABLE_TAIL) {
+            Serial.println(String("--") + atFSTable[i].atLable);
+            i++;
+        }
+        return AT_ERROR;
+    }
+    
+    String cmd = String(argv[0]);
+    uint32_t i = 0;
+    while (atFSTable[i].atLable != AT_LABLE_TAIL) {
+        if (atFSTable[i].atLable == cmd) {
+            if (atFSTable[i].act == nullptr) return AT_ERROR;
+            return atFSTable[i].act(argc - 1, argv + 1);
+        }
+        i++;
+    }
+
+    return AT_ERROR;
 }
 
 At_Err_t at_user_AT_WiFi_Connect(int argc, char *argv[]) {

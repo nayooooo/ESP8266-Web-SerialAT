@@ -26,13 +26,27 @@ int fs_tools_FS_info(void)
     return 0;
 }
 
-int fs_tools_print_directory(const String& path, int depth)
+int fs_tools_print_directory(const String& path)
 {
-    return fs_tools_print_directory(path.c_str(), depth);
+    return fs_tools_print_directory(path.c_str());
 }
 
-int fs_tools_print_directory(const char* path, int depth)
+int fs_tools_print_directory(const char* path)
 {
+    if (!fs_tools_FS_is_begin()) return -1;
+
+    if (path == nullptr) return -2;
+
+    // Dir dir = SPIFFS.openDir(path);
+    // if (!dir.isDirectory()) return -3;
+    // Serial.println();
+    // Serial.println(dir.name());
+    // while (dir.next()) {
+    //     Serial.println(String("--") + dir.fileName());
+    // }
+
+    SPIFFS.end();
+
     return 0;
 }
 

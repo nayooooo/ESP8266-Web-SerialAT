@@ -122,10 +122,6 @@ void setup() {
         webFSReset();
     }
 
-    SPIFFS.begin();
-    DirImplPtr fdir = SPIFFS.openDir(WEB_PAGE_FOLDER_PATH);
-    SPIFFS.end();
-
     if (WiFi.isConnected()) {
         web_server.onNotFound(webNotFound);
         web_server.on("/", webHomepage);
