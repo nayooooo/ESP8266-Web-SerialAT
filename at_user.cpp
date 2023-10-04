@@ -135,14 +135,37 @@ static At_Err_t _at_user_AT_FS_print_directory(int argc, char* argv[])
     return AT_OK;
 }
 
+static At_Err_t _at_user_AT_FS_print_content(int argc, char* argv[])
+{
+    if (argc == 0) return AT_ERROR;
+    if (argv[0] == "") return AT_ERROR;
+
+    String content = "";
+    int ret = fs_tools_readFile(argv[0], content);
+    if (ret) {
+        Serial.println(String("The file(") + argv[0] + ") has something error!");
+        return AT_ERROR;
+    }
+    if (content != "") {
+        Serial.println(String("The file(") + argv[0] + ") content: ");
+        Serial.println(content);
+    } else {
+        Serial.println(String("The file(") + argv[0] + ") is empty!");
+    }
+
+    return AT_OK;
+}
+
 static At_FS_State atFSTable[] = {
     { "info", AT_TYPE_CMD, _at_user_AT_FS_info },
-    { "print", AT_TYPE_CMD, _at_user_AT_FS_print_directory },
+    { "prdir", AT_TYPE_CMD, _at_user_AT_FS_print_directory },
+    { "prcon", AT_TYPE_CMD, _at_user_AT_FS_print_content },
     { AT_LABLE_TAIL, AT_TYPE_NULL, at_user_AT_NULL },
 };
 At_Err_t at_user_AT_FS(int argc, char *argv[])
 {
     if (argc == 0) {
+    AT_FS_set_not_found:
         Serial.println();
         Serial.println("please typing like the below: ");
         Serial.println("AT+FS");
@@ -164,7 +187,7 @@ At_Err_t at_user_AT_FS(int argc, char *argv[])
         i++;
     }
 
-    return AT_ERROR;
+    goto AT_FS_set_not_found;
 }
 
 At_Err_t at_user_AT_WiFi_Connect(int argc, char *argv[]) {
