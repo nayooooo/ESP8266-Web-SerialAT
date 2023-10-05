@@ -137,3 +137,27 @@ int fs_tools_readFile(const char* filePath, char* text, size_t length)
 
     return 0;
 }
+
+int fs_tools_openFile(const String& filePath, File& f, const char* mode)
+{
+    return fs_tools_openFile(filePath.c_str(), f, mode);
+}
+
+int fs_tools_openFile(const char* filePath, File& f, const char* mode)
+{
+    if (!fs_tools_FS_is_begin()) return -1;
+
+    if (!SPIFFS.exists(filePath)) return -2;
+
+    f = SPIFFS.open(filePath, mode);
+
+    SPIFFS.end();
+
+    return 0;
+}
+
+int fs_tools_closeFile(File& f)
+{
+    f.close();
+    return 0;
+}

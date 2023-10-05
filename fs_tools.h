@@ -19,4 +19,8 @@ int fs_tools_readFile(const String& filePath, String& text, size_t length = 0);
 int fs_tools_readFile(const String& filePath, char* text);
 int fs_tools_readFile(const char* filePath, char* text, size_t length = 0);
 
+int fs_tools_openFile(const String& filePath, File& f, const char* mode = "r");
+int fs_tools_openFile(const char* filePath, File& f, const char* mode = "r");
+int fs_tools_closeFile(File& f);
+
 #endif  // !__FS_TOOLS_H___

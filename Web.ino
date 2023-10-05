@@ -38,20 +38,22 @@ void serialEvent(void)
 ESP8266WebServer web_server(WEB_SERVER_PORT);
 
 #define WEB_PAGE_FOLDER_PATH                ((String)("/Web/page"))
+#define WEB_IMG_FOLDER_PATH                 ((String)("/Web/img"))
 #define WEB_PAGE_NOTFOUND_FILE_NAME         ((String)("notFound.html"))
 #define WEB_PAGE_NOTFOUND_FILE_PATH         (WEB_PAGE_FOLDER_PATH + "/" + WEB_PAGE_NOTFOUND_FILE_NAME)
 #define WEB_PAGE_HOMEPAGE_FILE_NAME         ((String)("homePage.html"))
 #define WEB_PAGE_HOMEPAGE_FILE_PATH         (WEB_PAGE_FOLDER_PATH + "/" + WEB_PAGE_HOMEPAGE_FILE_NAME)
 
-void webNotFound(void)
+void web_notFound(void)
 {
     String message;
     fs_tools_readFile(WEB_PAGE_NOTFOUND_FILE_PATH, message);
     web_server.send(404, "text/html", message);
 }
 
-void webHomepage(void)
+void web_homePage(void)
 {
+    web_server.sendHeader("Content-Type", "text/html; charset=utf-8");
     String message;
     fs_tools_readFile(WEB_PAGE_HOMEPAGE_FILE_PATH, message);
     web_server.send(200, "text/html", message.c_str());
@@ -80,8 +82,8 @@ void setup() {
     #if USE_WEB_SERVER
 
     if (WiFi.isConnected()) {
-        web_server.onNotFound(webNotFound);
-        web_server.on("/", webHomepage);
+        web_server.on("/", web_homePage);
+        web_server.serveStatic("/", SPIFFS, "/Web");
         web_server.begin();
         Serial.println("HTTP server started!");
     } else {
