@@ -4,6 +4,9 @@
 #include <Arduino.h>
 #include <FS.h>
 
+bool fs_tools_FS_begin(void);
+bool fs_tools_FS_end(void);
+
 int fs_tools_FS_info(void);
 
 int fs_tools_print_directory(const String& path);

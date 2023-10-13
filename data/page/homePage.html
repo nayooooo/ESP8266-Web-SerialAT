@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charser="utf-8" />
+    <title>ESP8266 homePage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #cccccc;
+            Color: #000088;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">Hello from ESP8266!</h1>
+    <div style="display: flex; flex-direction: column; width: 55.56%; margin: 0 auto;">
+        <p style="text-align: left; text-indent: 2em;">
+            这是一个用来测试ESP8266Web的样例，在这个样例中，你将会了解到以下知识：<br />
+            <pre>
+                1. 网页文本显示<br />
+                2. 网页按钮及按钮事件<br />
+                3. 网址跳转<br />
+                4. ESP8266Web服务器开发<br />
+                5. ...
+            </pre>
+        </p>
+        <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
+            <button id="refreshButton">刷新</button>
+            <a href="https://www.baidu.com"><button>百度</button></a>
+        </div>
+        <br />
+        <div style="display: flex; justify-content: center;">
+            <img decoding="async" src="../img/qrs.png" width="100" height="100" />
+        </div>
+        </div>
+    <script>
+        document.getElementById("refreshButton").addEventListener("click", function() {
+            console.log("Refresh request");
+            location.reload();
+        });
+    </script>
+</body>
+</html>
