@@ -60,54 +60,71 @@ At_Err_t at_user_AT_Reboot(At_Param_t param) {
   return AT_EOK;
 }
 
-#define AT_USER_LED_INITED (0X01)
-static struct LED _led = {
-  .pin = 2,
-  .state = LED_OFF,
-  .mode = OUTPUT,
-  .flag = 0,
+// 建立AT指令集下的LED子指令集
+#define _AT_USER_LED_ON      LOW
+#define _AT_USER_LED_OFF     HIGH
+static At_Err_t _at_user_led_on(At_Param_t param);
+static At_Err_t _at_user_led_off(At_Param_t param);
+struct At_State atLEDTable[] = {
+    { "on", AT_TYPE_CMD, _at_user_led_on },
+    { "off", AT_TYPE_CMD, _at_user_led_off },
+    { AT_LABLE_TAIL, AT_TYPE_NULL, at_user_AT_NULL },
 };
+static At _at_led(atLEDTable, Serial, Serial);
 
-At_Err_t at_user_AT_LED(At_Param_t param) {
-  String infor = "";
-  if ((param->argc != 1) && (param->argc != 2)) {
-    infor += "AT+LED\r\n";
-    infor += "\tSTATE\r\n";
-    infor += "\tNUM STATE\r\n";
-    at.sendInfor(infor);
-    return AT_ERROR;
-  }
-  LED_t led = &_led;
-  uint8_t led_pin_ind = param->argc - 2;
-  uint8_t led_state_ind = param->argc - 1;
-  if (strcmp(param->argv[led_state_ind], "ON") && strcmp(param->argv[led_state_ind], "OFF")) {
-    infor += AT_USER_ERROR_ARGC;
-    at.sendInfor(infor);
-    return AT_ERROR;
-  }
-  if (led_pin_ind == 0) {
-    led->pin = (uint8_t)(String(param->argv[led_pin_ind]).toInt());
-    led->flag &= ~AT_USER_LED_INITED;
-  }
-  if (!(led->flag & AT_USER_LED_INITED)) {  // 尚未初始化
-    pinMode(led->pin, led->mode);
-    led->flag |= AT_USER_LED_INITED;
-  }
-  if (!strcmp(param->argv[led_state_ind], "ON")) {
-    led->state = LED_ON;
-    digitalWrite(led->pin, led->state);
-  } else if (!strcmp(param->argv[led_state_ind], "OFF")) {
-    led->state = LED_OFF;
-    digitalWrite(led->pin, led->state);
-  }
-  infor += AT_USER_OK;
-  at.sendInfor(infor);
+static At_Err_t _at_user_led_on(At_Param_t param)
+{
+    pinMode(2, OUTPUT);
+    digitalWrite(2, _AT_USER_LED_ON);
+    _at_led.sendInfor(AT_USER_OK);
+    return AT_EOK;
+}
 
-  return AT_EOK;
+static At_Err_t _at_user_led_off(At_Param_t param)
+{
+    pinMode(2, OUTPUT);
+    digitalWrite(2, _AT_USER_LED_OFF);
+    _at_led.sendInfor(AT_USER_OK);
+    return AT_EOK;
+}
+
+At_Err_t at_user_AT_LED(At_Param_t param)
+{
+    At_Err_t err;
+    String str = "";
+
+    // if ((param->argc < 1) || (param->argc > 2)) {
+    if (param->argc != 1) {
+        goto err_out;
+    }
+    
+    for (size_t i = 0; i < param->argc; i++) {
+        str += String(param->argv[i]) + " ";
+    }
+    err = _at_led.handle(str);
+    if (err != AT_EOK) goto err_out;
+    at.sendInfor(AT_USER_OK);
+    return err;
+
+    if (0) {
+    err_out:
+        _at_led.printSet(param->cmd);
+        at.sendInfor(String("commond(") + param->cmd + ")'s param is error");
+        return AT_ERROR;
+    }
 }
 
 #include "fs_tools.h"
-typedef struct At_State At_FS_State;
+static At_Err_t _at_user_AT_FS_info(At_Param_t param);
+static At_Err_t _at_user_AT_FS_print_directory(At_Param_t param);
+static At_Err_t _at_user_AT_FS_print_content(At_Param_t param);
+static struct At_State atFSTable[] = {
+  { "info", AT_TYPE_CMD, _at_user_AT_FS_info },
+  { "prdir", AT_TYPE_CMD, _at_user_AT_FS_print_directory },
+  { "prcon", AT_TYPE_CMD, _at_user_AT_FS_print_content },
+  { AT_LABLE_TAIL, AT_TYPE_NULL, at_user_AT_NULL },
+};
+static At _at_fs(atFSTable, Serial, Serial);
 
 static At_Err_t _at_user_AT_FS_info(At_Param_t param) {
   if (fs_tools_FS_info()) return AT_ERROR;
@@ -133,26 +150,19 @@ static At_Err_t _at_user_AT_FS_print_content(At_Param_t param) {
   String content = "";
   int ret = fs_tools_readFile(param->argv[0], content);
   if (ret) {
-    Serial.println(String("The file(") + param->argv[0] + ") has something error!");
+    _at_fs.println(String("The file(") + param->argv[0] + ") has something error!");
     return AT_ERROR;
   }
   if (content != "") {
-    Serial.println(String("The file(") + param->argv[0] + ") content: ");
-    Serial.println(content);
+    _at_fs.println(String("The file(") + param->argv[0] + ") content: ");
+    _at_fs.println(content);
   } else {
-    Serial.println(String("The file(") + param->argv[0] + ") is empty!");
+    _at_fs.println(String("The file(") + param->argv[0] + ") is empty!");
   }
 
   return AT_EOK;
 }
 
-static At_FS_State atFSTable[] = {
-  { "info", AT_TYPE_CMD, _at_user_AT_FS_info },
-  { "prdir", AT_TYPE_CMD, _at_user_AT_FS_print_directory },
-  { "prcon", AT_TYPE_CMD, _at_user_AT_FS_print_content },
-  { AT_LABLE_TAIL, AT_TYPE_NULL, at_user_AT_NULL },
-};
-static At _at_fs(atFSTable, Serial, Serial);
 At_Err_t at_user_AT_FS(At_Param_t param) {
   At_Err_t err;
   String str = "";
@@ -166,7 +176,7 @@ At_Err_t at_user_AT_FS(At_Param_t param) {
   }
   err = _at_fs.handle(str);
   if (err != AT_EOK) goto err_out;
-  _at_fs.sendInfor(AT_USER_OK);
+  at.sendInfor(AT_USER_OK);
   return AT_EOK;
 
   if (0) {
@@ -214,7 +224,7 @@ static Pinger pinger;
 static bool pinger_set_ok = false;
 At_Err_t at_user_AT_Ping(At_Param_t param) {
   if (!WiFi.isConnected()) {
-    Serial.println("Wi-Fi is not connect!");
+    at.println("Wi-Fi is not connect!");
     return AT_ERROR;
   }
 
@@ -227,7 +237,7 @@ At_Err_t at_user_AT_Ping(At_Param_t param) {
                       response.ResponseTime,
                       response.TimeToLive);
       } else {
-        Serial.println("Request timed out.");
+        at.println("Request timed out.");
       }
       return true;
     });
@@ -245,13 +255,13 @@ At_Err_t at_user_AT_Ping(At_Param_t param) {
                     response.TotalSentRequests - response.TotalReceivedResponses,
                     loss);
       if (response.TotalReceivedResponses > 0) {
-        Serial.println("Approximate round trip times in milli-seconds:");
+        at.println("Approximate round trip times in milli-seconds:");
         Serial.printf("\tMinimum = %lums, Maximum = %lums, Average = %.2fms\r\n",
                       response.MinResponseTime,
                       response.MaxResponseTime,
                       response.AvgResponseTime);
       }
-      Serial.println("Destination host data:");
+      at.println("Destination host data:");
       Serial.printf("\tIP address: %s\r\n",
                     response.DestIPAddress.toString().c_str());
       if (response.DestMacAddress != nullptr) {
@@ -270,14 +280,14 @@ At_Err_t at_user_AT_Ping(At_Param_t param) {
 
   if (param->argc == 0) {
     if (pinger.Ping(WiFi.gatewayIP()) == false) {
-      Serial.println("Error during last ping command.");
+      at.println("Error during last ping command.");
     }
   } else if (param->argc == 1) {
     if (pinger.Ping(param->argv[0]) == false) {
-      Serial.println("Error during last ping command.");
+      at.println("Error during last ping command.");
     }
   } else {
-    Serial.println("arg number error!");
+    at.println("arg number error!");
     return AT_ERROR;
   }
 
