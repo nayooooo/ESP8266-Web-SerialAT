@@ -11,17 +11,30 @@
         }
     </style>
     <script>
-        function getServerIP() {
+        function getServerIP_Uri() {
             var serverIP = window.location.hostname;
             console.log("服务器IP地址：" + serverIP);
             alert("服务器IP地址：" + serverIP);
+        }
+        function getServerTemperature() {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    console.log(xhr.responseText);
+                    alert(xhr.responseText);
+                }
+            }
+            xhr.open("GET", "/data/temperature", true);
+            xhr.send();
         }
     </script>
 </head>
 <body>
     <h1 style="text-align: center;">这是一张用来与ESP8266交互的网页</h1>
     <div style="text-align: center; margin: 0 auto;">
-        <button onclick="getServerIP()">获取服务器IP</button>
+        <button onclick="getServerIP_Uri()">获取服务器IP<br />通过URI</button>
+        <br /><br />
+        <button onclick="getServerTemperature()">获取服务器温度<br />通过GET</button>
     </div>
 </body>
 </html>

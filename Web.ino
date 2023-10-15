@@ -56,6 +56,12 @@ void web_echoPage(void)
     web_server.send(200, "text/html", message.c_str());
 }
 
+void web_handleGETTemperature(void)
+{
+    web_server.sendHeader("Content-Type", "text/html; charset=utf-8");
+    web_server.send(200, "text/plain", "20℃");
+}
+
 #endif  // USE_WEB_SERVER
 
 /*============================================================
@@ -84,6 +90,7 @@ void setup() {
 
     web_server.on("/", web_homePage);
     web_server.on("/echo", web_echoPage);
+    web_server.on("/data/temperature", web_handleGETTemperature);
     web_server.begin();
     Serial.println("HTTP server started!");
 
