@@ -231,7 +231,7 @@ At_Err_t at_user_AT_Ping(At_Param_t param) {
   if (!pinger_set_ok) {
     pinger.OnReceive([](const PingerResponse &response) {
       if (response.ReceivedResponse) {
-        Serial.printf("Reply from %s: bytes=%d time=%lums TTL=%d\r\n",
+        at.printf("Reply from %s: bytes=%d time=%lums TTL=%d\r\n",
                       response.DestIPAddress.toString().c_str(),
                       response.EchoMessageSize - sizeof(struct icmp_echo_hdr),
                       response.ResponseTime,
@@ -247,29 +247,29 @@ At_Err_t at_user_AT_Ping(At_Param_t param) {
       if (response.TotalReceivedResponses > 0) {
         loss = (response.TotalSentRequests - response.TotalReceivedResponses) * 100 / response.TotalSentRequests;
       }
-      Serial.printf("Ping statistics for %s:\r\n",
+      at.printf("Ping statistics for %s:\r\n",
                     response.DestIPAddress.toString().c_str());
-      Serial.printf("\tPackets: Sent = %lu, Received = %lu, Lost = %lu (%.2f%% loss),\r\n",
+      at.printf("\tPackets: Sent = %lu, Received = %lu, Lost = %lu (%.2f%% loss),\r\n",
                     response.TotalSentRequests,
                     response.TotalReceivedResponses,
                     response.TotalSentRequests - response.TotalReceivedResponses,
                     loss);
       if (response.TotalReceivedResponses > 0) {
         at.println("Approximate round trip times in milli-seconds:");
-        Serial.printf("\tMinimum = %lums, Maximum = %lums, Average = %.2fms\r\n",
+        at.printf("\tMinimum = %lums, Maximum = %lums, Average = %.2fms\r\n",
                       response.MinResponseTime,
                       response.MaxResponseTime,
                       response.AvgResponseTime);
       }
       at.println("Destination host data:");
-      Serial.printf("\tIP address: %s\r\n",
+      at.printf("\tIP address: %s\r\n",
                     response.DestIPAddress.toString().c_str());
       if (response.DestMacAddress != nullptr) {
-        Serial.printf("\tMAC address: " MACSTR "\r\n",
+        at.printf("\tMAC address: " MACSTR "\r\n",
                       MAC2STR(response.DestMacAddress->addr));
       }
       if (response.DestHostname != "") {
-        Serial.printf("\tDNS name: %s\r\n",
+        at.printf("\tDNS name: %s\r\n",
                       response.DestHostname.c_str());
       }
       return true;

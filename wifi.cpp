@@ -13,7 +13,7 @@ int ESP8266_WiFi_STA_Init(const String &ssid, const String &password) {
   while (WiFi.status() != WL_CONNECTED) {
     err_time++;
     if (err_time >= 100) return -1;
-    delay(500);
+    delay(200);
     Serial.print(".");
   }
   Serial.println();

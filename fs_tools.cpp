@@ -8,14 +8,12 @@ bool fs_tools_FS_begin(void)
 
 bool fs_tools_FS_end(void)
 {
-    // SPIFFS.end();
+    SPIFFS.end();
     return true;
 }
 
 int fs_tools_FS_info(void)
 {
-    if (!fs_tools_FS_begin()) return -1;
-
     FSInfo fs_info;
     SPIFFS.info(fs_info);
 
@@ -29,8 +27,6 @@ int fs_tools_FS_info(void)
     Serial.println((String)("pageSize: ") + fs_info.pageSize);
     Serial.println("/=========================== SPIFFS info end ===========================/");
 
-    fs_tools_FS_end();
-
     return 0;
 }
 
@@ -41,8 +37,6 @@ int fs_tools_print_directory(const String& path)
 
 int fs_tools_print_directory(const char* path)
 {
-    if (!fs_tools_FS_begin()) return -1;
-
     Dir dir = SPIFFS.openDir(path);
     Serial.println();
     if (path == "") {
@@ -67,8 +61,6 @@ int fs_tools_print_directory(const char* path)
         Serial.println(String("Total files size: ") + String((float)total_f_size / 1024) + "KB");
     }
 
-    fs_tools_FS_end();
-
     return 0;
 }
 
@@ -89,13 +81,9 @@ int fs_tools_writeFile(const String& filePath, const char* text)
 
 int fs_tools_writeFile(const char* filePath, const char* text)
 {
-    if (!fs_tools_FS_begin()) return -1;
-
     File f = SPIFFS.open(filePath, "w");
     f.print(text);
     f.close();
-
-    fs_tools_FS_end();
 
     return 0;
 }
@@ -107,8 +95,6 @@ int fs_tools_readFile(const char* filePath, String& text)
 
 int fs_tools_readFile(const String& filePath, String& text, size_t length)
 {
-    if (!fs_tools_FS_begin()) return -1;
-
     if (!SPIFFS.exists(filePath)) return -2;
 
     File f = SPIFFS.open(filePath, "r");
@@ -117,8 +103,6 @@ int fs_tools_readFile(const String& filePath, String& text, size_t length)
     }
     text = f.readString();
     f.close();
-
-    fs_tools_FS_end();
 
     return 0;
 }
@@ -130,8 +114,6 @@ int fs_tools_readFile(const String& filePath, char* text)
 
 int fs_tools_readFile(const char* filePath, char* text, size_t length)
 {
-    if (!fs_tools_FS_begin()) return -1;
-
     if (!SPIFFS.exists(filePath)) return -2;
 
     File f = SPIFFS.open(filePath, "r");
@@ -140,8 +122,6 @@ int fs_tools_readFile(const char* filePath, char* text, size_t length)
     }
     f.readBytes(text, length);
     f.close();
-
-    fs_tools_FS_end();
 
     return 0;
 }
@@ -153,13 +133,9 @@ int fs_tools_openFile(const String& filePath, File& f, const char* mode)
 
 int fs_tools_openFile(const char* filePath, File& f, const char* mode)
 {
-    if (!fs_tools_FS_begin()) return -1;
-
     if (!SPIFFS.exists(filePath)) return -2;
 
     f = SPIFFS.open(filePath, mode);
-
-    fs_tools_FS_end();
 
     return 0;
 }

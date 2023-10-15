@@ -28,6 +28,8 @@ ESP8266WebServer web_server(WEB_SERVER_PORT);
 #define WEB_PAGE_NOTFOUND_FILE_PATH         (WEB_PAGE_FOLDER_PATH + "/" + WEB_PAGE_NOTFOUND_FILE_NAME)
 #define WEB_PAGE_HOMEPAGE_FILE_NAME         ((String)("homePage.html"))
 #define WEB_PAGE_HOMEPAGE_FILE_PATH         (WEB_PAGE_FOLDER_PATH + "/" + WEB_PAGE_HOMEPAGE_FILE_NAME)
+#define WEB_PAGE_ECHOPAGE_FILE_NAME         ((String)("echo.html"))
+#define WEB_PAGE_ECHOPAGE_FILE_PATH         (WEB_PAGE_FOLDER_PATH + "/" + WEB_PAGE_ECHOPAGE_FILE_NAME)
 
 void web_notFound(void)
 {
@@ -46,6 +48,14 @@ void web_homePage(void)
     Serial.println("用户访问了主页。");
 }
 
+void web_echoPage(void)
+{
+    web_server.sendHeader("Content-Type", "text/html; charset=utf-8");
+    String message;
+    fs_tools_readFile(WEB_PAGE_ECHOPAGE_FILE_PATH, message);
+    web_server.send(200, "text/html", message.c_str());
+}
+
 #endif  // USE_WEB_SERVER
 
 /*============================================================
@@ -59,24 +69,23 @@ void setup() {
     // put your setup code here, to run once:
     Serial.begin(115200UL);
 
+    if (!fs_tools_FS_begin()) {
+        Serial.println("SPIFFS start failed!");
+        while (true);
+    }
+
     if (ESP8266_WiFi_STA_Init(wifi_ssid, wifi_psk)) {
         Serial.println();
         Serial.println("Connect failed!");
     }
+    WiFi.setHostname("esp8266webserver");
 
     #if USE_WEB_SERVER
 
-    if (WiFi.isConnected()) {
-        if(fs_tools_FS_begin()) {
-            web_server.serveStatic("/download", SPIFFS, "/");
-            fs_tools_FS_end();
-        }
-        web_server.on("/", web_homePage);
-        web_server.begin();
-        Serial.println("HTTP server started!");
-    } else {
-        Serial.println("Can't start HTTP server!");
-    }
+    web_server.on("/", web_homePage);
+    web_server.on("/echo", web_echoPage);
+    web_server.begin();
+    Serial.println("HTTP server started!");
 
     #endif  // USE_WEB_SERVER
 }

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charser="utf-8" />
+    <title>ESP8266 echo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #cccccc;
+            Color: #000088;
+        }
+    </style>
+    <script>
+        function getServerIP() {
+            var serverIP = window.location.hostname;
+            console.log("服务器IP地址：" + serverIP);
+            alert("服务器IP地址：" + serverIP);
+        }
+    </script>
+</head>
+<body>
+    <h1 style="text-align: center;">这是一张用来与ESP8266交互的网页</h1>
+    <div style="text-align: center; margin: 0 auto;">
+        <button onclick="getServerIP()">获取服务器IP</button>
+    </div>
+</body>
+</html>
