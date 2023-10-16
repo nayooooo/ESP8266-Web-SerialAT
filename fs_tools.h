@@ -6,6 +6,7 @@
 
 bool fs_tools_FS_begin(void);
 bool fs_tools_FS_end(void);
+bool fs_tools_FS_format(void);
 
 int fs_tools_FS_info(void);
 

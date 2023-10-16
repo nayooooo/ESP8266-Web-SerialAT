@@ -116,10 +116,12 @@ At_Err_t at_user_AT_LED(At_Param_t param)
 
 #include "fs_tools.h"
 static At_Err_t _at_user_AT_FS_info(At_Param_t param);
+static At_Err_t _at_user_AT_FS_format(At_Param_t param);
 static At_Err_t _at_user_AT_FS_print_directory(At_Param_t param);
 static At_Err_t _at_user_AT_FS_print_content(At_Param_t param);
 static struct At_State atFSTable[] = {
   { "info", AT_TYPE_CMD, _at_user_AT_FS_info },
+  { "format", AT_TYPE_CMD, _at_user_AT_FS_format },
   { "prdir", AT_TYPE_CMD, _at_user_AT_FS_print_directory },
   { "prcon", AT_TYPE_CMD, _at_user_AT_FS_print_content },
   { AT_LABLE_TAIL, AT_TYPE_NULL, at_user_AT_NULL },
@@ -129,6 +131,12 @@ static At _at_fs(atFSTable, Serial, Serial);
 static At_Err_t _at_user_AT_FS_info(At_Param_t param) {
   if (fs_tools_FS_info()) return AT_ERROR;
   return AT_EOK;
+}
+
+static At_Err_t _at_user_AT_FS_format(At_Param_t param)
+{
+    if (fs_tools_FS_format() != true) return AT_ERROR;
+    return AT_EOK;
 }
 
 static At_Err_t _at_user_AT_FS_print_directory(At_Param_t param) {

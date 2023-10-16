@@ -22,11 +22,11 @@
 #define WEB_SERVER_PORT         (80)
 ESP8266WebServer web_server(WEB_SERVER_PORT);
 
-#define WEB_PAGE_FOLDER_PATH                ((String)("/page"))
-#define WEB_IMG_FOLDER_PATH                 ((String)("/img"))
+#define WEB_PAGE_FOLDER_PATH                ((String)(""))
+#define WEB_IMG_FOLDER_PATH                 ((String)(""))
 #define WEB_PAGE_NOTFOUND_FILE_NAME         ((String)("notFound.html"))
 #define WEB_PAGE_NOTFOUND_FILE_PATH         (WEB_PAGE_FOLDER_PATH + "/" + WEB_PAGE_NOTFOUND_FILE_NAME)
-#define WEB_PAGE_HOMEPAGE_FILE_NAME         ((String)("homePage.html"))
+#define WEB_PAGE_HOMEPAGE_FILE_NAME         ((String)("home.html"))
 #define WEB_PAGE_HOMEPAGE_FILE_PATH         (WEB_PAGE_FOLDER_PATH + "/" + WEB_PAGE_HOMEPAGE_FILE_NAME)
 #define WEB_PAGE_ECHOPAGE_FILE_NAME         ((String)("echo.html"))
 #define WEB_PAGE_ECHOPAGE_FILE_PATH         (WEB_PAGE_FOLDER_PATH + "/" + WEB_PAGE_ECHOPAGE_FILE_NAME)
@@ -54,6 +54,24 @@ void web_echoPage(void)
     String message;
     fs_tools_readFile(WEB_PAGE_ECHOPAGE_FILE_PATH, message);
     web_server.send(200, "text/html", message.c_str());
+}
+
+void web_animPage(void)
+{
+    File f = SPIFFS.open("/index.html", "r");
+    web_server.streamFile(f, "text/html");
+}
+
+void web_animPage_css(void)
+{
+    File f = SPIFFS.open("/style.css", "r");
+    web_server.streamFile(f, "text/css");
+}
+
+void web_animPage_js(void)
+{
+    File f = SPIFFS.open("/main.js", "r");
+    web_server.streamFile(f, "application/javascript");
 }
 
 void web_handleGETTemperature(void)
@@ -89,8 +107,12 @@ void setup() {
     #if USE_WEB_SERVER
 
     web_server.on("/", web_homePage);
+    web_server.on("/home", web_homePage);
     web_server.on("/echo", web_echoPage);
-    web_server.on("/data/temperature", web_handleGETTemperature);
+    web_server.on("/anim", web_animPage);
+    web_server.on("/style.css", web_animPage_css);
+    web_server.on("/main.js", web_animPage_js);
+    web_server.on("/data/temp", web_handleGETTemperature);
     web_server.begin();
     Serial.println("HTTP server started!");
 

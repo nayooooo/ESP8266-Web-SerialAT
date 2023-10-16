@@ -12,6 +12,12 @@ bool fs_tools_FS_end(void)
     return true;
 }
 
+bool fs_tools_FS_format(void)
+{
+    SPIFFS.format();
+    return true;
+}
+
 int fs_tools_FS_info(void)
 {
     FSInfo fs_info;

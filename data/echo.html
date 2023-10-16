@@ -16,7 +16,7 @@
             console.log("服务器IP地址：" + serverIP);
             alert("服务器IP地址：" + serverIP);
         }
-        function getServerTemperature() {
+        function getServerTemp() {
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
@@ -24,7 +24,7 @@
                     alert(xhr.responseText);
                 }
             }
-            xhr.open("GET", "/data/temperature", true);
+            xhr.open("GET", "/data/temp", true);
             xhr.send();
         }
     </script>
@@ -34,7 +34,9 @@
     <div style="text-align: center; margin: 0 auto;">
         <button onclick="getServerIP_Uri()">获取服务器IP<br />通过URI</button>
         <br /><br />
-        <button onclick="getServerTemperature()">获取服务器温度<br />通过GET</button>
+        <button onclick="getServerTemp()">获取服务器温度<br />通过GET</button>
+        <br /><br />
+        <a href="/home"><button>转到主页面</button></a>
     </div>
 </body>
 </html>
